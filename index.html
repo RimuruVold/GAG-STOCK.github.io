@@ -1,11 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html><html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Grow a Garden - Pet Stock</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
     header { background: #4CAF50; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-    .stock-list { padding: 1rem; max-width: 900px; margin: auto; background: white; margin-top: 2rem; border-radius: 8px; }
+    .stock-list { padding: 1rem; max-width: 900px; margin: auto; background: white; margin-top: 1rem; border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 0.5rem; border-bottom: 1px solid #ccc; text-align: left; }
     .settings-btn, .save-btn, .logout-btn, .new-pet-btn, .copy-btn { background: none; border: none; color: white; font-size: 1rem; cursor: pointer; margin-left: 10px; }
@@ -19,21 +20,11 @@
     .clickable { cursor: pointer; color: blue; }
     .copy-section { margin-top: 1rem; }
     .copy-section textarea { width: 100%; height: 100px; }
-    
-    @media only screen and (max-width: 768px){
-    header{
-        justify-content: center;
-        flex-direction: column;
-    }
-    
-}
   </style>
 </head>
 <body>
   <header>
     <h1>Pet Stock List</h1>
-    <p> WA: 081358859082</p>
-    <p> Grub:<a href="https://chat.whatsapp.com/DH3uHN2crR650UF4B09vdO?mode=ac_t">Gas4Win Grub</a></p>
     <div>
       <select id="sortSelect" onchange="sortStock()">
         <option value="">Sort by</option>
@@ -50,6 +41,9 @@
       <button class="logout-btn hidden" id="logoutBtn" onclick="logout()">🚪 Logout</button>
     </div>
   </header>
+  <div style="text-align:center; padding-top:10px; font-size: 1rem; color: #333;">
+    📞 WhatsApp: 081358859082
+  </div>
   <div class="stock-list">
     <table>
       <thead>
@@ -75,8 +69,7 @@
         <textarea id="copyOutput" readonly></textarea>
       </div>
     </div>
-  </div>
-  <div class="login-page" id="loginPage">
+  </div>  <div class="login-page" id="loginPage">
     <div class="login-box">
       <h2>Admin Login</h2>
       <label>Username: <input type="text" id="username"></label><br><br>
@@ -84,158 +77,147 @@
       <button onclick="login()">Login</button>
       <button onclick="toggleLogin()">Cancel</button>
     </div>
-  </div>
-  <script>
-    let stock = [
-      { "name": "Bronto", "qty": 5, "price": 2.000 },
-      { "name": "C Dragonfly", "qty": 1, "price": 30.000 },
-      { "name": "C Kitsune", "qty": 4, "price": 8.000 },
-      { "name": "C Kodam", "qty": 6, "price": 10.000 },
-      { "name": "C Trex", "qty": 1, "price": 20.000 },
-      { "name": "Capy", "qty": 5, "price": 2.000 },
-      { "name": "Chicken Zombie", "qty": 2, "price": 15.000 },
-      { "name": "Dragonfly", "qty": 2, "price": 30.000 },
-      { "name": "Frozen Blood Owl", "qty": 1, "price": 2.000 },
-      { "name": "Frozen Queen Bee", "qty": 1, "price": 15.000 },
-      { "name": "Gold Kitsune", "qty": 1, "price": 300.000 },
-      { "name": "Golden Disco Bee", "qty": 1, "price": 80.000 },
-      { "name": "Ironskin Red Fox", "qty": 1, "price": 6.000 },
-      { "name": "Kappa", "qty": 9, "price": 2.000 },
-      { "name": "Kodam", "qty": 16, "price": 500 },
-      { "name": "Mimic", "qty": 5, "price": 20.000 },
-      { "name": "Moon Cat", "qty": 1, "price": 3.000 },
-      { "name": "Queen Bee", "qty": 1, "price": 15.000 },
-      { "name": "Radiant Queen Bee", "qty": 1, "price": 15.000 },
-      { "name": "Red Fox", "qty": 11, "price": 6.000 },
-      { "name": "Shiny Dragonfly", "qty": 1, "price": 30.000 },
-      { "name": "Shiny Mimic", "qty": 2, "price": 20.000 },
-      { "name": "Shiny Trex", "qty": 1, "price": 20.000 },
-      { "name": "Spino", "qty": 2, "price": 30.000 },
-      { "name": "Tranquil Dragonfly", "qty": 2, "price": 30.000 },
-      { "name": "Tranquil Kitsune", "qty": 1, "price": 300.000 },
-      { "name": "Tranquil Trex", "qty": 3, "price": 20.000 },
-      { "name": "Trex", "qty": 6, "price": 20.000 }
-    ];let isAdmin = false;
-let currentKeyword = "";
+  </div>  <!-- Firebase SDK -->  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPc2OGZJkhxAAMHH-vkPq8SDCz-Y1kdxI",
+      authDomain: "gag-stock-ea694.firebaseapp.com",
+      databaseURL: "https://gag-stock-ea694-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "gag-stock-ea694",
+      storageBucket: "gag-stock-ea694.firebasestorage.app",
+      messagingSenderId: "469914195593",
+      appId: "1:469914195593:web:17209f759273a279ed9858"
+    };
 
-function renderTable() {
-  const table = document.getElementById('petTable');
-  table.innerHTML = '';
-  stock.forEach((pet, index) => {
-    if (pet.name.toLowerCase().includes(currentKeyword)) {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${pet.name}</td>
-        <td class="clickable" onclick="editField(${index}, 'qty')">${pet.qty}</td>
-        <td class="clickable" onclick="editField(${index}, 'price')">${pet.price}</td>
-        <td class="admin-column">
-          ${isAdmin ? `
-            <button class='qty-btn' onclick='changeQty(${index}, 1)'>+</button>
-            <button class='qty-btn' onclick='changeQty(${index}, -1)'>-</button>
-          ` : ''}
-        </td>
-      `;
-      table.appendChild(row);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let stock = [];
+    let isAdmin = false;
+    let currentKeyword = "";
+
+    db.ref('stock').on('value', snapshot => {
+      const data = snapshot.val();
+      stock = data ? data : [];
+      renderTable();
+    });
+
+    function renderTable() {
+      const table = document.getElementById('petTable');
+      table.innerHTML = '';
+      stock.forEach((pet, index) => {
+        if (pet.name.toLowerCase().includes(currentKeyword)) {
+          const row = document.createElement('tr');
+          row.className = 'pet-row';
+          row.innerHTML = `
+            <td>${pet.name}</td>
+            <td class="clickable" onclick="editField(${index}, 'qty')">${pet.qty}</td>
+            <td class="clickable" onclick="editField(${index}, 'price')">${pet.price}</td>
+            <td class="admin-column">
+              ${isAdmin ? `
+                <button class='qty-btn' onclick='changeQty(${index}, 1)'>+</button>
+                <button class='qty-btn' onclick='changeQty(${index}, -1)'>-</button>
+              ` : ''}
+            </td>
+          `;
+          table.appendChild(row);
+        }
+      });
+      document.querySelectorAll('.admin-column').forEach(col => {
+        col.style.display = isAdmin ? 'table-cell' : 'none';
+      });
+      document.querySelector('.admin-controls').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('saveBtn').classList.toggle('hidden', !isAdmin);
+      document.getElementById('logoutBtn').classList.toggle('hidden', !isAdmin);
     }
-  });
-  document.querySelectorAll('.admin-column').forEach(col => {
-    col.style.display = isAdmin ? 'table-cell' : 'none';
-  });
-  document.querySelector('.admin-controls').style.display = isAdmin ? 'block' : 'none';
-  document.getElementById('saveBtn').classList.toggle('hidden', !isAdmin);
-  document.getElementById('logoutBtn').classList.toggle('hidden', !isAdmin);
-}
 
-function toggleLogin() {
-  document.getElementById('loginPage').style.display = 'flex';
-}
-
-function login() {
-  const user = document.getElementById('username').value;
-  const pass = document.getElementById('password').value;
-  if (user === 'admin' && pass === 'Skull771') {
-    isAdmin = true;
-    document.getElementById('loginPage').style.display = 'none';
-    renderTable();
-  } else {
-    alert('Invalid credentials.');
-  }
-}
-
-function logout() {
-  isAdmin = false;
-  renderTable();
-}
-
-function changeQty(index, delta) {
-  stock[index].qty += delta;
-  if (stock[index].qty < 0) stock[index].qty = 0;
-  renderTable();
-}
-
-function addNewPet() {
-  const name = document.getElementById('newPetName').value.trim();
-  const qty = parseInt(document.getElementById('newPetQty').value);
-  const price = parseInt(document.getElementById('newPetPrice').value);
-  if (name && !isNaN(qty) && !isNaN(price)) {
-    stock.push({ name, qty, price });
-    document.getElementById('newPetName').value = '';
-    document.getElementById('newPetQty').value = '';
-    document.getElementById('newPetPrice').value = '';
-    renderTable();
-  }
-}
-
-function editField(index, field) {
-  if (!isAdmin) return;
-  const newValue = prompt(`Enter new ${field}:`, stock[index][field]);
-  if (newValue !== null && !isNaN(newValue)) {
-    stock[index][field] = parseInt(newValue);
-    renderTable();
-  }
-}
-
-function saveStock() {
-  stock = stock.filter(p => p.qty > 0);
-  alert('Stock saved successfully.');
-  renderTable();
-}
-
-function filterPets() {
-  currentKeyword = document.getElementById('searchBox').value.toLowerCase();
-  renderTable();
-}
-
-function sortStock() {
-  const type = document.getElementById('sortSelect').value;
-  if (type === 'name-asc') stock.sort((a, b) => a.name.localeCompare(b.name));
-  else if (type === 'name-desc') stock.sort((a, b) => b.name.localeCompare(a.name));
-  else if (type === 'price-asc') stock.sort((a, b) => a.price - b.price);
-  else if (type === 'price-desc') stock.sort((a, b) => b.price - a.price);
-  else if (type === 'qty-asc') stock.sort((a, b) => a.qty - b.qty);
-  else if (type === 'qty-desc') stock.sort((a, b) => b.qty - a.qty);
-  renderTable();
-}
-
-function generateCopyList() {
-  const input = document.getElementById('copyInput').value;
-  const names = input.split(',').map(n => n.trim().toLowerCase());
-  let list = "#WTS\n";
-  names.forEach(name => {
-    const found = stock.find(p => p.name.toLowerCase() === name);
-    if (found) {
-      list += `${found.name} (${found.qty}) r ${found.price}\n`;
+    function toggleLogin() {
+      const loginPage = document.getElementById('loginPage');
+      loginPage.style.display = loginPage.style.display === 'flex' ? 'none' : 'flex';
     }
-  });
-  list += "\nMINAT? PM/TAG DI GRUP\nNEGO DI PM!!\nDIRECT/MM FEE LU";
-  document.getElementById('copyOutput').value = list;
-  document.getElementById('copyOutput').select();
-  document.execCommand("copy");
-  alert("Copied to clipboard!");
-}
 
-renderTable();
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === 'admin' && pass === 'Skull771') {
+        isAdmin = true;
+        toggleLogin();
+        renderTable();
+      } else {
+        alert('Invalid credentials.');
+      }
+    }
 
-  </script>
-</body>
+    function logout() {
+      isAdmin = false;
+      renderTable();
+    }
+
+    function changeQty(index, delta) {
+      stock[index].qty += delta;
+      if (stock[index].qty < 0) stock[index].qty = 0;
+      renderTable();
+    }
+
+    function addNewPet() {
+      const name = document.getElementById('newPetName').value.trim();
+      const qty = parseInt(document.getElementById('newPetQty').value);
+      const price = parseInt(document.getElementById('newPetPrice').value);
+      if (name && !isNaN(qty) && !isNaN(price)) {
+        stock.push({ name, qty, price });
+        document.getElementById('newPetName').value = '';
+        document.getElementById('newPetQty').value = '';
+        document.getElementById('newPetPrice').value = '';
+        renderTable();
+      }
+    }
+
+    function editField(index, field) {
+      if (!isAdmin) return;
+      const newValue = prompt(`Enter new ${field}:`, stock[index][field]);
+      if (newValue !== null && !isNaN(newValue)) {
+        stock[index][field] = parseInt(newValue);
+        renderTable();
+      }
+    }
+
+    function saveStock() {
+      stock = stock.filter(p => p.qty > 0);
+      db.ref('stock').set(stock);
+      alert('Stock saved and synced online.');
+      renderTable();
+    }
+
+    function filterPets() {
+      currentKeyword = document.getElementById('searchBox').value.toLowerCase();
+      renderTable();
+    }
+
+    function sortStock() {
+      const type = document.getElementById('sortSelect').value;
+      if (type === 'name-asc') stock.sort((a, b) => a.name.localeCompare(b.name));
+      else if (type === 'name-desc') stock.sort((a, b) => b.name.localeCompare(a.name));
+      else if (type === 'price-asc') stock.sort((a, b) => a.price - b.price);
+      else if (type === 'price-desc') stock.sort((a, b) => b.price - a.price);
+      else if (type === 'qty-asc') stock.sort((a, b) => a.qty - b.qty);
+      else if (type === 'qty-desc') stock.sort((a, b) => b.qty - a.qty);
+      renderTable();
+    }
+
+    function generateCopyList() {
+      const input = document.getElementById('copyInput').value;
+      const names = input.split(',').map(n => n.trim().toLowerCase());
+      let list = "#WTS\n";
+      names.forEach(name => {
+        const found = stock.find(p => p.name.toLowerCase() === name);
+        if (found) {
+          list += `${found.name} (${found.qty}) r ${found.price}\n`;
+        }
+      });
+      list += "\nMINAT? PM/TAG DI GRUP\nNEGO DI PM!!\nDIRECT/MM FEE LU";
+      document.getElementById('copyOutput').value = list;
+      document.getElementById('copyOutput').select();
+      document.execCommand("copy");
+      alert("Copied to clipboard!");
+    }
+  </script></body>
 </html>
