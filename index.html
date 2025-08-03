@@ -1,0 +1,214 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grow a Garden - Pet Stock</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    header { background: #4CAF50; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .stock-list { padding: 1rem; max-width: 900px; margin: auto; background: white; margin-top: 2rem; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid #ccc; text-align: left; }
+    .settings-btn, .save-btn, .logout-btn, .new-pet-btn, .copy-btn { background: none; border: none; color: white; font-size: 1rem; cursor: pointer; margin-left: 10px; }
+    .login-page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .login-box { background: white; padding: 2rem; border-radius: 8px; }
+    .admin-controls { display: none; margin-top: 1rem; }
+    .qty-btn { cursor: pointer; padding: 0 5px; font-weight: bold; }
+    input[type='text'], input[type='number'], textarea { padding: 0.3rem; margin: 0.5rem 0.5rem 0 0; }
+    #searchBox { padding: 0.4rem; border-radius: 4px; border: none; margin-left: 10px; }
+    .hidden { display: none; }
+    .clickable { cursor: pointer; color: blue; }
+    .copy-section { margin-top: 1rem; }
+    .copy-section textarea { width: 100%; height: 100px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pet Stock List</h1>
+    <div>
+      <select id="sortSelect" onchange="sortStock()">
+        <option value="">Sort by</option>
+        <option value="name-asc">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="price-asc">Price Low-High</option>
+        <option value="price-desc">Price High-Low</option>
+        <option value="qty-asc">Qty Low-High</option>
+        <option value="qty-desc">Qty High-Low</option>
+      </select>
+      <input type="text" id="searchBox" placeholder="Search pet..." onkeyup="filterPets()">
+      <button class="settings-btn" onclick="toggleLogin()">⚙️</button>
+      <button class="save-btn hidden" id="saveBtn" onclick="saveStock()">💾 Save</button>
+      <button class="logout-btn hidden" id="logoutBtn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </header>  <div class="stock-list">
+    <table>
+      <thead>
+        <tr>
+          <th>Pet</th>
+          <th>Qty</th>
+          <th>Price (r)</th>
+          <th class="admin-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="petTable"></tbody>
+    </table>
+    <div class="admin-controls">
+      <h3>Add New Pet</h3>
+      <input type="text" id="newPetName" placeholder="Pet Name">
+      <input type="number" id="newPetQty" placeholder="Qty" min="1">
+      <input type="number" id="newPetPrice" placeholder="Price" min="0">
+      <button class="new-pet-btn" onclick="addNewPet()">➕ Add Pet</button><div class="copy-section">
+    <h3>Copy Pet List for Sale</h3>
+    <input type="text" id="copyInput" placeholder="Enter pet names separated by comma">
+    <button onclick="generateCopyList()">📋 Copy</button>
+    <textarea id="copyOutput" readonly></textarea>
+  </div>
+</div>
+
+  </div>  <div class="login-page" id="loginPage">
+    <div class="login-box">
+      <h2>Admin Login</h2>
+      <label>Username: <input type="text" id="username"></label><br><br>
+      <label>Password: <input type="password" id="password"></label><br><br>
+      <button onclick="login()">Login</button>
+      <button onclick="toggleLogin()">Cancel</button>
+    </div>
+  </div>  <script>
+    let stock = JSON.parse(localStorage.getItem('petStock')) || [
+      { name: 'Tranquil kitsune ori', qty: 1, price: 300 },
+      { name: 'C kitsune', qty: 6, price: 5 },
+      { name: 'Mimic', qty: 1, price: 20 },
+      { name: 'Tranquil mimic', qty: 1, price: 20 },
+      { name: 'Tranquil dragonfly', qty: 2, price: 30 },
+      { name: 'Shiny dragonfly', qty: 1, price: 30 },
+      { name: 'Tranquil trex', qty: 2, price: 20 },
+      { name: 'Shiny trex', qty: 1, price: 20 },
+      { name: 'Trex', qty: 1, price: 20 },
+      { name: 'Red fox', qty: 1, price: 6 },
+      { name: 'Radiant queen bee', qty: 1, price: 18 }
+    ];
+    let isAdmin = false;
+    let currentKeyword = "";
+
+    function renderTable() {
+      const table = document.getElementById('petTable');
+      table.innerHTML = '';
+      stock.forEach((pet, index) => {
+        if (pet.name.toLowerCase().includes(currentKeyword)) {
+          const row = document.createElement('tr');
+          row.className = 'pet-row';
+          row.innerHTML = `
+            <td>${pet.name}</td>
+            <td class="clickable" onclick="editField(${index}, 'qty')">${pet.qty}</td>
+            <td class="clickable" onclick="editField(${index}, 'price')">${pet.price}</td>
+            <td class="admin-column">
+              ${isAdmin ? `
+                <button class='qty-btn' onclick='changeQty(${index}, 1)'>+</button>
+                <button class='qty-btn' onclick='changeQty(${index}, -1)'>-</button>
+              ` : ''}
+            </td>
+          `;
+          table.appendChild(row);
+        }
+      });
+      document.querySelectorAll('.admin-column').forEach(col => {
+        col.style.display = isAdmin ? 'table-cell' : 'none';
+      });
+      document.querySelector('.admin-controls').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('saveBtn').classList.toggle('hidden', !isAdmin);
+      document.getElementById('logoutBtn').classList.toggle('hidden', !isAdmin);
+    }
+
+    function toggleLogin() {
+      const loginPage = document.getElementById('loginPage');
+      loginPage.style.display = loginPage.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === 'admin' && pass === 'Skull771') {
+        isAdmin = true;
+        toggleLogin();
+        renderTable();
+      } else {
+        alert('Invalid credentials.');
+      }
+    }
+
+    function logout() {
+      isAdmin = false;
+      renderTable();
+    }
+
+    function changeQty(index, delta) {
+      stock[index].qty += delta;
+      if (stock[index].qty < 0) stock[index].qty = 0;
+      renderTable();
+    }
+
+    function addNewPet() {
+      const name = document.getElementById('newPetName').value.trim();
+      const qty = parseInt(document.getElementById('newPetQty').value);
+      const price = parseInt(document.getElementById('newPetPrice').value);
+      if (name && !isNaN(qty) && !isNaN(price)) {
+        stock.push({ name, qty, price });
+        document.getElementById('newPetName').value = '';
+        document.getElementById('newPetQty').value = '';
+        document.getElementById('newPetPrice').value = '';
+        renderTable();
+      }
+    }
+
+    function editField(index, field) {
+      if (!isAdmin) return;
+      const newValue = prompt(`Enter new ${field}:`, stock[index][field]);
+      if (newValue !== null && !isNaN(newValue)) {
+        stock[index][field] = parseInt(newValue);
+        renderTable();
+      }
+    }
+
+    function saveStock() {
+      stock = stock.filter(p => p.qty > 0);
+      localStorage.setItem('petStock', JSON.stringify(stock));
+      alert('Stock saved successfully.');
+      renderTable();
+    }
+
+    function filterPets() {
+      currentKeyword = document.getElementById('searchBox').value.toLowerCase();
+      renderTable();
+    }
+
+    function sortStock() {
+      const type = document.getElementById('sortSelect').value;
+      if (type === 'name-asc') stock.sort((a, b) => a.name.localeCompare(b.name));
+      else if (type === 'name-desc') stock.sort((a, b) => b.name.localeCompare(a.name));
+      else if (type === 'price-asc') stock.sort((a, b) => a.price - b.price);
+      else if (type === 'price-desc') stock.sort((a, b) => b.price - a.price);
+      else if (type === 'qty-asc') stock.sort((a, b) => a.qty - b.qty);
+      else if (type === 'qty-desc') stock.sort((a, b) => b.qty - a.qty);
+      renderTable();
+    }
+
+    function generateCopyList() {
+      const input = document.getElementById('copyInput').value;
+      const names = input.split(',').map(n => n.trim().toLowerCase());
+      let list = "#WTS\n";
+      names.forEach(name => {
+        const found = stock.find(p => p.name.toLowerCase() === name);
+        if (found) {
+          list += `${found.name} (${found.qty}) r ${found.price}\n`;
+        }
+      });
+      list += "\nMINAT? PM/TAG DI GRUP\nNEGO DI PM!!\nDIRECT/MM FEE LU";
+      document.getElementById('copyOutput').value = list;
+      document.getElementById('copyOutput').select();
+      document.execCommand("copy");
+      alert("Copied to clipboard!");
+    }
+
+    renderTable();
+  </script></body>
+</html>
