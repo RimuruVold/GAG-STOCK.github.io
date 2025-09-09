@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - Pet Stock</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f4f4f4;
+    }
+    header {
+      background: #333; color: white;
+      padding: 1rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .hidden { display: none; }
+    .container {
+      max-width: 900px; margin: 2rem auto; padding: 1rem;
+      background: white; border-radius: 8px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 0.5rem; border-bottom: 1px solid #ccc; text-align: left;
+    }
+    button {
+      padding: 0.4rem 0.8rem; margin: 0.2rem;
+      border: none; border-radius: 4px;
+      cursor: pointer;
+    }
+    .logout-btn { background: crimson; color: white; }
+    .add-btn { background: seagreen; color: white; }
+    input[type=text], input[type=number], input[type=password], input[type=email] {
+      padding: 0.4rem; margin: 0.3rem 0; width: 100%;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Admin Panel</h1>
+  <button class="logout-btn hidden" id="logoutBtn">Logout</button>
+</header>
+
+<div class="container">
+  <!-- Login Form -->
+  <div id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <!-- Admin Controls -->
+  <div id="adminPanel" class="hidden">
+    <h2>Manage Pet Stock</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Pet</th>
+          <th>Qty</th>
+          <th>Price (r)</th>
+          <th>Account</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="petTable"></tbody>
+    </table>
+
+    <h3>Add New Pet</h3>
+    <input type="text" id="newPetName" placeholder="Pet Name">
+    <input type="number" id="newPetQty" placeholder="Qty">
+    <input type="number" id="newPetPrice" placeholder="Price">
+    <input type="text" id="newPetAccount" placeholder="Account">
+    <button class="add-btn" id="addPetBtn">➕ Add Pet</button>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+<script>
+  // Firebase Config (AMAN karena rules akan membatasi akses)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPc2OGZJkhxAAMHH-vkPq8SDCz-Y1kdxI",
+    authDomain: "gag-stock-ea694.firebaseapp.com",
+    databaseURL: "https://gag-stock-ea694-default-rtdb.asia-southeast1.firebasedatabase.ap",
+    projectId: "gag-stock-ea694",
+    storageBucket: "gag-stock-ea694.firebasestorage.app",
+    messagingSenderId: "469914195593",
+    appId: "1:469914195593:web:17209f759273a279ed9858"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  const loginBox = document.getElementById("loginBox");
+  const adminPanel = document.getElementById("adminPanel");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const addPetBtn = document.getElementById("addPetBtn");
+  const petTable = document.getElementById("petTable");
+
+  // Auth Listener
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loginBox.classList.add("hidden");
+      adminPanel.classList.remove("hidden");
+      logoutBtn.classList.remove("hidden");
+      loadStock();
+    } else {
+      // Kalau tidak login, jangan izinkan tetap di admin
+      loginBox.classList.remove("hidden");
+      adminPanel.classList.add("hidden");
+      logoutBtn.classList.add("hidden");
+    }
+  });
+
+  // Login
+  loginBtn.onclick = () => {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+  };
+
+  // Logout
+  logoutBtn.onclick = () => auth.signOut();
+
+  // Load Stock Data
+  function loadStock() {
+    db.ref("stock").on("value", snap => {
+      const data = snap.val() || [];
+      petTable.innerHTML = "";
+      data.forEach((pet, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${pet.name}</td>
+          <td>${pet.qty}</td>
+          <td>${pet.price}</td>
+          <td>${pet.account}</td>
+          <td>
+            <button onclick="editPet(${i})">✏️ Edit</button>
+            <button onclick="deletePet(${i})">🗑️ Delete</button>
+          </td>
+        `;
+        petTable.appendChild(row);
+      });
+    });
+  }
+
+  // Add Pet
+  addPetBtn.onclick = () => {
+    const name = document.getElementById("newPetName").value;
+    const qty = parseInt(document.getElementById("newPetQty").value);
+    const price = parseInt(document.getElementById("newPetPrice").value);
+    const account = document.getElementById("newPetAccount").value;
+    if (!name || isNaN(qty) || isNaN(price) || !account) return alert("Isi semua field!");
+
+    db.ref("stock").once("value").then(snap => {
+      const data = snap.val() || [];
+      data.push({ name, qty, price, account });
+      db.ref("stock").set(data);
+    });
+
+    document.getElementById("newPetName").value = "";
+    document.getElementById("newPetQty").value = "";
+    document.getElementById("newPetPrice").value = "";
+    document.getElementById("newPetAccount").value = "";
+  };
+
+  // Edit Pet
+  function editPet(index) {
+    db.ref("stock").once("value").then(snap => {
+      const data = snap.val() || [];
+      const pet = data[index];
+      const newQty = prompt("Qty baru:", pet.qty);
+      if (newQty !== null) data[index].qty = parseInt(newQty);
+
+      const newPrice = prompt("Harga baru:", pet.price);
+      if (newPrice !== null) data[index].price = parseInt(newPrice);
+
+      db.ref("stock").set(data);
+    });
+  }
+
+  // Delete Pet
+  function deletePet(index) {
+    if (!confirm("Hapus pet ini?")) return;
+    db.ref("stock").once("value").then(snap => {
+      const data = snap.val() || [];
+      data.splice(index, 1);
+      db.ref("stock").set(data);
+    });
+  }
+</script>
+</body>
+</html>
